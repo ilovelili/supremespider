@@ -33,13 +33,13 @@ var casper = require('casper')
         }
     },
     fs = require('fs'),
-    budgetfile = fs.pathJoin('budget', dateservice.today + '.csv'),
+    budgetfile = fs.pathJoin('./budget', dateservice.today + '.csv'),
     utils = require('utils'),
+    url = 'http://www.supremenewyork.com/shop',
     links = [];
 
 // step 1: open url
-console.log('opening url: ' + config.url);
-casper.start(config.url);
+casper.start(url);
 
 casper.then(function () {
     var categoriesInConfig = config.rule.categories,
@@ -81,8 +81,10 @@ casper.then(function () {
     utils.dump(links);
 
     links.forEach(function (link) {
-        console.log(link);
-    }, this);
+        casper.thenOpen('http://www.supremenewyork.com' + link, function () {
+            this.capture(fs.pathJoin('./snapshots', dateservice.today + link + '.png'));
+        });
+    });
 });
 
 // entry
