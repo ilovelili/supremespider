@@ -1,0 +1,19 @@
+{
+    "url": "http://www.supremenewyork.com/shop",
+    "userinfo": {
+        "firstname": "田邊",
+        "lastname": "元",
+        "email": "h.tanabe1217@gmail.com",
+        "mobile": "07069798948",
+        "state": "東京都",
+        "city": "渋谷区南平台町",
+        "street": "7-3 201号",
+        "postalcode": "1500036"        
+    },
+    "payment": "代金引換",
+    "rule": {
+        "budget": 10000,
+        "categories": "jackets",
+        "color": "black"
+    }
+}

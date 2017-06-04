@@ -1,0 +1,11 @@
+{
+    "name": "supremespider",
+    "description": "Scraping supreme info and place order automatically",
+    "version": "0.0.0",
+    "private": true,
+    "dependencies": {
+        "phantomjs": "^2.1.7",
+        "casperjs": "^1.1.4",
+        "rss": "^1.2.2"
+    }
+}
