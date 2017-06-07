@@ -1,13 +1,4 @@
-var casper = require('casper')
-    .create({
-        verbose: true,
-        logLevel: 'debug',
-        pageSettings: {
-            loadImages: false,
-            loadPlugins: false
-        },
-        // clientScripts: ["includes/jquery-3.2.1.min.js"]
-    }),
+var casper = require('casper').create(),
     config = require('config.json'),
     format = function (d) {
         var month = '' + (d.getMonth() + 1),
@@ -33,10 +24,12 @@ var casper = require('casper')
         }
     },
     fs = require('fs'),
-    budgetfile = fs.pathJoin('./budget', dateservice.today + '.csv'),
+    budgetfile = fs.pathJoin('./budget', dateservice.today + '.txt'),
+    budget = getBudget(),
     utils = require('utils'),
     url = 'http://www.supremenewyork.com/shop',
-    links = [];
+    links = [],
+    ordereditems = [];
 
 // step 1: open url
 casper.start(url);
@@ -82,7 +75,81 @@ casper.then(function () {
 
     links.forEach(function (link) {
         casper.thenOpen('http://www.supremenewyork.com' + link, function () {
+            // first, capture snapshot
             this.capture(fs.pathJoin('./snapshots', dateservice.today + link + '.png'));
+
+            // second, order it
+            this.waitForSelector(".sold-out",
+                function soldOut() {
+                    // has been sold out
+                    console.log(link + ' has been sold out');
+                },
+                function order() {
+                    // valid product, order it
+                    budget = this.evaluate(function (config, budget) {
+                        var price = parseInt($('span[itemprop="price"]').text().replace(',', '').replace('¥', '') /*¥42,120 to 42120*/);
+                        if (isNaN(price)) {
+                            console.error(link + ' has invalid price. Skip');
+                            return;
+                        }
+
+                        // over budget, do nothing
+                        if (price > budget) {
+                            console.info('budget exceeded');
+                            return;
+                        }
+
+                        // select color
+                        var coloroption = $('a[data-style-name="' + config.rule.color + '"]');
+                        // no that color
+                        if (!coloroption || !coloroption.length) {
+                            console.error('Color not found! Skip ' + config.rule.color);
+                            return;
+                        }
+
+                        // select size
+                        var sizeoption = $('select[name="size"]');
+                        if (!sizeoption || !sizeoption.length) {
+                            console.error('Size not found! Skip ' + config.rule.size);
+                            return;
+                        }
+
+                        $("select[name='size'] option").filter(function () {
+                            return $(this).text() == config.rule.size;
+                        }).prop('selected', true);
+
+                        // select quantity
+                        // OK to have no qunatity
+                        var quantityoption = $('select[name="qty"]');
+                        if (!quantityoption || !quantityoption.length) {
+                            console.info('Qunatity not found. Continue with default quantity ' + config.rule.maxquantity);
+                        } else {
+                            var qty = parseInt(config.rule.maxquantity);
+                            // invalid qty
+                            if (isNaN(qty) || qty < 1) {
+                                console.error('Invalid quantity ' + qty);
+                                return;
+                            }
+
+                            // get the max valiable qty
+                            quantityoption.val(qty);
+                            while (quantityoption.val() != qty) {
+                                qty--;
+                                quantityoption.val(qty);
+                            }
+                        }
+
+                        // all set, submit
+                        $('input[type="submit"]').click();
+                        // adjust the current budget
+                        return budget - price;
+                    },
+                        {
+                            config: config,
+                            budget: budget,
+                        }
+                    );
+                }, 2000);
         });
     });
 });
@@ -93,27 +160,32 @@ casper.run(function () {
 });
 
 /**
- * Over budget or not? 
+ * Get current budget
  */
-function overBudget(price) {
-    // no budget file => not over budget
-    if (!fs.exists(path)) return false;
+function getBudget() {
+    var configuredBudget = parseInt(config.rule.budget);
+
+    // config budget is wierd.. fallback to safe side
+    if (isNaN(configuredBudget)) {
+        console.error('budget config is wierd. FIX IT');
+        return 0;
+    }
+
+    // no budget file => return configured budget
+    if (!fs.exists(budgetfile)) {
+        return configuredBudget;
+    }
 
     var budget = parseInt(fs.readFileSync(budgetfile));
     // budget storage is wierd.. fallback to safe side
     if (isNaN(budget)) {
         console.error('budget storage is wierd...');
-        return yes;
+        return 0;
     }
 
-    // config budget is wierd.. fallback to safe side
-    if (isNaN(parseInt(config.rule.budget))) {
-        console.error('budget config is wierd. FIX IT');
-        return yes;
-    }
-
-    return budget + price >= parseInt(config.rule.budget)
+    return budget;
 }
+
 
 /**
  * Event listening

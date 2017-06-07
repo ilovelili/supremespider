@@ -13,6 +13,8 @@
     "rule": {
         "budget": 10000,
         "categories": "jackets",
-        "color": "black"
+        "color": "Black",
+        "size": "Large",
+        "maxquantity": "3"
     }
 }
