@@ -28,10 +28,12 @@ var casper = require('casper').create(),
     budget = getBudget(),
     utils = require('utils'),
     url = 'http://www.supremenewyork.com/shop',
+    checkouturl = 'http://www.supremenewyork.com/checkout',
     links = [],
     ordereditems = [];
 
 // step 1: open url
+casper.userAgent(config.useragent);
 casper.start(url);
 
 casper.then(function () {
@@ -69,6 +71,7 @@ casper.then(function () {
     }
 });
 
+// place orders
 casper.then(function () {
     console.log('links are:');
     utils.dump(links);
@@ -89,34 +92,36 @@ casper.then(function () {
                     budget = this.evaluate(function (config, budget) {
                         var price = parseInt($('span[itemprop="price"]').text().replace(',', '').replace('¥', '') /*¥42,120 to 42120*/);
                         if (isNaN(price)) {
-                            console.error(link + ' has invalid price. Skip');
-                            return;
+                            console.log(link + ' has invalid price. Skip');
+                            return budget;
                         }
 
                         // over budget, do nothing
                         if (price > budget) {
                             console.info('budget exceeded');
-                            return;
+                            return budget;
                         }
 
+                        /* comment out for testing
                         // select color
                         var coloroption = $('a[data-style-name="' + config.rule.color + '"]');
                         // no that color
                         if (!coloroption || !coloroption.length) {
-                            console.error('Color not found! Skip ' + config.rule.color);
-                            return;
+                            console.log('Color not found! Skip ' + config.rule.color);
+                            return budget;
                         }
 
                         // select size
                         var sizeoption = $('select[name="size"]');
                         if (!sizeoption || !sizeoption.length) {
-                            console.error('Size not found! Skip ' + config.rule.size);
-                            return;
+                            console.log('Size not found! Skip ' + config.rule.size);
+                            return budget;
                         }
 
                         $("select[name='size'] option").filter(function () {
                             return $(this).text() == config.rule.size;
                         }).prop('selected', true);
+                        */
 
                         // select quantity
                         // OK to have no qunatity
@@ -127,8 +132,8 @@ casper.then(function () {
                             var qty = parseInt(config.rule.maxquantity);
                             // invalid qty
                             if (isNaN(qty) || qty < 1) {
-                                console.error('Invalid quantity ' + qty);
-                                return;
+                                console.log('Invalid quantity ' + qty);
+                                return budget;
                             }
 
                             // get the max valiable qty
@@ -139,23 +144,36 @@ casper.then(function () {
                             }
                         }
 
-                        // all set, submit
-                        $('input[type="submit"]').click();
+                        // add to cart
+                        $('input[value="カートに入れる"]').click();
+
+                        // console.info(phantom.cookies);
+
+                         // fs.write(cookiefile, JSON.stringify(phantom.cookies));
+
                         // adjust the current budget
                         return budget - price;
                     },
                         {
                             config: config,
-                            budget: budget,
+                            budget: budget,                            
                         }
                     );
+
+                    console.log('current budget is ' + budget);
                 }, 2000);
         });
     });
 });
 
+// checkout!
+// casper.thenOpen('https://www.supremenewyork.com/checkout', function () {
+//     this.capture(fs.pathJoin('./snapshots', dateservice.today, 'checkout.png'));
+// });
+
 // entry
 casper.run(function () {
+    console.log('All done. Exit');
     this.exit();
 });
 
@@ -167,7 +185,7 @@ function getBudget() {
 
     // config budget is wierd.. fallback to safe side
     if (isNaN(configuredBudget)) {
-        console.error('budget config is wierd. FIX IT');
+        console.log('budget config is wierd. FIX IT');
         return 0;
     }
 
@@ -179,7 +197,7 @@ function getBudget() {
     var budget = parseInt(fs.readFileSync(budgetfile));
     // budget storage is wierd.. fallback to safe side
     if (isNaN(budget)) {
-        console.error('budget storage is wierd...');
+        console.log('budget storage is wierd...');
         return 0;
     }
 

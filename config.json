@@ -1,4 +1,5 @@
-{    
+{   
+    "useragent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36",
     "userinfo": {
         "firstname": "田邊",
         "lastname": "元",
@@ -12,7 +13,7 @@
     "payment": "代金引換",
     "rule": {
         "budget": 10000,
-        "categories": "jackets",
+        "categories": "skate",
         "color": "Black",
         "size": "Large",
         "maxquantity": "3"
