@@ -87,13 +87,13 @@ casper.then(function () {
                     budget = this.evaluate(function (config, budget) {
                         var price = parseInt($('span[itemprop="price"]').text().replace(',', '').replace('¥', '') /*¥42,120 to 42120*/);
                         if (isNaN(price)) {
-                            console.log(link + ' has invalid price. Skip');
+                            console.log('invalid price. Skip');
                             return budget;
                         }
 
                         // over budget, do nothing
                         if (price > budget) {
-                            console.info(link + ' budget exceeded');
+                            console.info('budget exceeded');
                             return budget;
                         }
 
@@ -210,17 +210,19 @@ casper.then(function () {
 
                                     // comment out me to place REAL orders!                                
                                     this.wait(1000);
-                                    $('.checkout')[0].click();
+
+                                    // todo: debugger;
+                                    $('form').submit();
                                 },
                                     {
                                         config: config
-                                    });                                
+                                    });
                             });
                         });
 
                         // after checkout
                         this.then(function () {
-                            this.wait(5000, function () {
+                            this.wait(2000, function () {
                                 this.capture(fs.pathJoin('./snapshots', dateservice.today + '/checkout-completed.png'));
                             });
                         })
