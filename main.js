@@ -93,29 +93,36 @@ casper.then(function () {
 
                         // over budget, do nothing
                         if (price > budget) {
-                            console.info('budget exceeded');
+                            console.info(link + ' budget exceeded');
                             return budget;
                         }
 
                         // select color
+                        // Black as default
+                        if (!config.rule.color) config.rule.color = 'Black';
+
                         var coloroption = $('a[data-style-name="' + config.rule.color + '"]');
                         // no that color
                         if (!coloroption || !coloroption.length) {
-                            console.log('Color not found! Skip ' + config.rule.color);
-                            return budget;
+                            console.log('Color not found. Skip');
+                        } else {
+                            coloroption[0].click();
                         }
 
                         // select size
                         var sizeoption = $('select[name="size"]');
                         if (!sizeoption || !sizeoption.length) {
-                            console.log('Size not found! Skip ' + config.rule.size);
-                            return budget;
-                        }
+                            console.log('Size not found. Skip');
+                        } else {
+                            // Medium as default
+                            if (!config.rule.size) config.rule.size = 'Medium';
 
-                        $("select[name='size'] option").filter(function () {
-                            return $(this).text() == config.rule.size;
-                        }).prop('selected', true);
-                        $("select[name='size']").trigger('change');
+                            $("select[name='size'] option").filter(function () {
+                                return $(this).text() == config.rule.size;
+                            }).prop('selected', true);
+
+                            $("select[name='size']").trigger('change');
+                        }
 
                         // select quantity
                         // OK to have no qunatity
@@ -148,74 +155,77 @@ casper.then(function () {
                         }
                     );
 
-                    // view summary
-                    this.then(function () {
-                        this.wait(2000, function () {
-                            // !! last index => check out
-                            if (index == links.length - 1) {
+                    // !! last index => check out
+                    if (index == links.length - 1) {
+                        // view summary
+                        this.then(function () {
+                            this.wait(2000, function () {
                                 this.evaluate(function summary() {
                                     //  $('.edit')[0] instead of $('.edit') for anchor click
                                     $('.edit')[0].click();
                                 });
-                            }
-                        }
-                        );
-                    });
-
-                    // click checkout
-                    this.then(function () {
-                        this.wait(2000, function () {
-                            this.capture(fs.pathJoin('./snapshots', dateservice.today + '/summary.png'));
-                            // then checkout
-                            this.evaluate(function checkout() {
-                                $('.checkout')[0].click();
                             });
-                        }
-                        );
-                    });
+                        });
 
-                    // go checkout
-                    this.then(function () {
-                        this.wait(2000, function () {
-                            // fill in the checkout form                                
-                            this.evaluate(function checkout(config) {
-
-                                // do not use $("#order_billing_state).val(' ' + config.userinfo.state) in case select change event not triggered
-                                $("#order_billing_state option").filter(function () {
-                                    return $(this).text().indexOf(config.userinfo.state) > -1; // there is a space prefix on the site...
-                                }).prop('selected', true);
-                                // trigger change manually
-                                $('#order_billing_state').trigger('change');
-
-                                $('#credit_card_type option').filter(function () {
-                                    return $(this).text() == config.payment;
-                                }).prop('selected', true);
-                                // trigger change manually
-                                $('#credit_card_type').trigger('change');
-
-                                $('#credit_card_last_name').val(config.userinfo.lastname);
-                                $('#credit_card_first_name').val(config.userinfo.firstname);
-                                $('#order_email').val(config.userinfo.email);
-                                $('#order_tel').val(config.userinfo.tel);
-                                $('#order_billing_state').val(' ' + config.userinfo.state);
-                                $('#order_billing_city').val(config.userinfo.city);
-                                $('#order_billing_address').val(config.userinfo.street);
-                                $('#order_billing_zip').val(config.userinfo.postalcode);
-
-                                // service terms
-                                $('#order_terms')[0].click();
-
-                                // comment out me to place REAL orders!                                
-                                // $('.checkout')[0].click();
-                            },
-                                {
-                                    config: config
+                        // click checkout
+                        this.then(function () {
+                            this.wait(2000, function () {
+                                this.capture(fs.pathJoin('./snapshots', dateservice.today + '/summary.png'));
+                                // then checkout
+                                this.evaluate(function checkout() {
+                                    $('.checkout')[0].click();
                                 });
+                            });
+                        });
 
-                            this.capture(fs.pathJoin('./snapshots', dateservice.today + '/checkout.png'));
-                        }
-                        );
-                    });
+                        // go checkout
+                        this.then(function () {
+                            this.wait(2000, function () {
+                                // fill in the checkout form                                
+                                this.evaluate(function checkout(config) {
+                                    // do not use $("#order_billing_state).val(' ' + config.userinfo.state) in case select change event not triggered
+                                    $("#order_billing_state option").filter(function () {
+                                        return $(this).text().indexOf(config.userinfo.state) > -1; // there is a space prefix on the site...
+                                    }).prop('selected', true);
+                                    // trigger change manually
+                                    $('#order_billing_state').trigger('change');
+
+                                    $('#credit_card_type option').filter(function () {
+                                        return $(this).text() == config.payment;
+                                    }).prop('selected', true);
+                                    // trigger change manually
+                                    $('#credit_card_type').trigger('change');
+
+                                    $('#credit_card_last_name').val(config.userinfo.lastname);
+                                    $('#credit_card_first_name').val(config.userinfo.firstname);
+                                    $('#order_email').val(config.userinfo.email);
+                                    $('#order_tel').val(config.userinfo.tel);
+                                    $('#order_billing_state').val(' ' + config.userinfo.state);
+                                    $('#order_billing_city').val(config.userinfo.city);
+                                    $('#order_billing_address').val(config.userinfo.street);
+                                    $('#order_billing_zip').val(config.userinfo.postalcode);
+
+                                    // service terms
+                                    $('#order_terms')[0].click();
+
+                                    // comment out me to place REAL orders!                                
+                                    this.wait(1000);
+                                    $('.checkout')[0].click();
+                                },
+                                    {
+                                        config: config
+                                    });                                
+                            });
+                        });
+
+                        // after checkout
+                        this.then(function () {
+                            this.wait(5000, function () {
+                                this.capture(fs.pathJoin('./snapshots', dateservice.today + '/checkout-completed.png'));
+                            });
+                        })
+
+                    } // exit checkout
 
                     console.log('current budget is ' + budget);
 

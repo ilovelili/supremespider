@@ -10,5 +10,5 @@
 ## Rule Options
 * budget - Budget for all the orders
 * categories - jackets | sweatshirts | shirts | pants | t-shirts | shorts | hats | accessories | tops/sweaters
-* color - Light Aqua | Black | White | Pea Green | Red | Pale Orange | Dusty Blue | Light Navy | Navy | Burgundy | Desert Camo | Bright Blue | Heather Grey | Bright Yellow
+* color - Light Aqua | Black | White | Pea Green | Red | Pale Orange | Dusty Blue | Light Navy | Navy | Burgundy | Desert Camo | Bright Blue | Heather Grey | Bright Yellow | Purple | Teal | Light Yellow
 * size - Small | Medium | Large | XLarge
