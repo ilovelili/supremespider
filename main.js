@@ -210,6 +210,8 @@ casper.then(function () {
 
                                     // comment out me to place REAL orders!                                
                                     this.setTimeout(function() {
+                                        // Have picture validation.. So can't call submit directly.
+                                        // create an AJAX call and post to endpoint directly?
                                         $('form').submit();    
                                     }, 1000);                                    
                                 },
