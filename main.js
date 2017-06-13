@@ -209,10 +209,9 @@ casper.then(function () {
                                     $('#order_terms')[0].click();
 
                                     // comment out me to place REAL orders!                                
-                                    this.wait(1000);
-
-                                    // todo: debugger;
-                                    $('form').submit();
+                                    this.setTimeout(function() {
+                                        $('form').submit();    
+                                    }, 1000);                                    
                                 },
                                     {
                                         config: config
