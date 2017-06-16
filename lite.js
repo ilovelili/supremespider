@@ -1,6 +1,5 @@
 var casper = require('casper').create(),
-    config = require('config.json'), 
-    utils = require('utils'),
+    config = require('config.json'),
     url = 'http://www.supremenewyork.com/shop',
     links = [];
 
@@ -45,20 +44,21 @@ casper.then(function () {
 
 // place orders
 casper.then(function () {
-    console.log('links are:');
-    utils.dump(links);
-
     links.forEach(function (link, index, arr) {
         casper.thenOpen('http://www.supremenewyork.com' + link, function () {
             // second, order it
             this.waitForSelector(".sold-out",
                 function soldOut() {
-                    // do nothing
+                    // do nothing                    
                 },
                 function valid() {
-                    // valid product, order it
-                    console.log('http://www.supremenewyork.com/' + link);
-                }, 1000);
+                    this.evaluate(function (config, link) {
+                        if ($('[itemprop="name"]').text().indexOf(config.rule.title) > -1) {
+                            // valid product, record it
+                            console.info('http://www.supremenewyork.com/' + link);
+                        }
+                    }, { config: config, link: link });
+                }, 500);
         });
     });
 });
