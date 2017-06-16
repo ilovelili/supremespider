@@ -205,15 +205,23 @@ casper.then(function () {
                                     $('#order_billing_address').val(config.userinfo.street);
                                     $('#order_billing_zip').val(config.userinfo.postalcode);
 
+                                    // inject g-recaptcha-response                                    
+                                    check = window.setInterval(function () {
+                                        if ($('#g-recaptcha-response')) {
+                                            $('#g-recaptcha-response').val('03AOPBWq_clHKIYs5n7x2thfEGTEB20dH44M0mewWwP13LZ2DZlJ0NXS14I-LgXhhod82S8WbbuhBFcmYF9mJmhS_pWAmHXBwCeNlDtAECqK_Cp6wLmyUawCT10nqkxOE_T7Jx8wAoEN1-05PHpHAZ4TG_C4ulwRxWiaIzoNI9Py88ZPs_bGPzF4zTO4wVoBQBME394X_eGewLXYmvEGZ6EbYo5ku-WJPVe8OQTSfxYWAXAFbQQ07Tn3avbH-TmZA3_CdWWviJX5eYq9GATXx1CXEP4tZjYAh6VSfLGISAPeHKvQSQw7ORucdosNzB9AXwC09EZCV4iCAftNiIEldPW8o5l6dljZaMlvmBwnwhf_7KcPzWHdDMHFarv9rzA8YjNOr4teYgW-movtSCw11VKKGFgS800P4aWKWUOZHMZMzkNZovOryxXNg')
+                                            window.clearInterval(check);
+                                        }
+                                    }, 400)
+
                                     // service terms
                                     $('#order_terms')[0].click();
 
                                     // comment out me to place REAL orders!                                
-                                    this.setTimeout(function() {
+                                    this.setTimeout(function () {
                                         // Have picture validation.. So can't call submit directly.
                                         // create an AJAX call and post to endpoint directly?
-                                        $('form').submit();    
-                                    }, 1000);                                    
+                                        $('form').submit();
+                                    }, 1000);
                                 },
                                     {
                                         config: config
